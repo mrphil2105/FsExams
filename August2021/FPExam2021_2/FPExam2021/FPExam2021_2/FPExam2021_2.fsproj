@@ -9,6 +9,7 @@
     <Compile Include="JParsec.fs" />
     <Compile Include="Exam.fs" />
     <Compile Include="Program.fs" />
+    <Compile Include="Suggested1.fs" />
   </ItemGroup>
   <ItemGroup />
 </Project>

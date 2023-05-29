@@ -2,22 +2,22 @@
 (* If you are importing this into F# interactive then comment out
    the line above and remove the comment for the line bellow.
 
-   Do note that the project will not compile if you do this, but 
-   it does allow you to work in interactive mode and you can just remove the '=' 
+   Do note that the project will not compile if you do this, but
+   it does allow you to work in interactive mode and you can just remove the '='
    to make the project compile again.
 
    You will also need to load JParsec.fs. Do this by typing
-   #load "JParsec.fs" 
+   #load "JParsec.fs"
    in the interactive environment. You may need the entire path.
 
    Do not remove the module declaration (even though that does work) because you may inadvertantly
    introduce indentation errors in your code that may be hard to find if you want
-   to switch back to project mode. 
+   to switch back to project mode.
 
    Alternative, keep the module declaration as is, but load ExamInteractive.fsx into the interactive environment
    *)
 (*
- module Exam2021_2 = 
+ module Exam2021_2 =
  *)
 
 (* 1: Binary lists *)
@@ -29,24 +29,54 @@
     | Cons1 of 'a * binList<'a, 'b>
     | Cons2 of 'b * binList<'a, 'b>
 
-    let length _ = failwith "not implemented"
-    
+    let rec length =
+        function
+        | Nil -> 0
+        | Cons1 (_, rest) -> 1 + length rest
+        | Cons2 (_, rest) -> 1 + length rest
+
 (* Question 1.2 *)
-    let split _ = failwith "not implemented"
-    let length2 _ = failwith "not implemented"
+    let rec split =
+        function
+        | Nil -> ([], [])
+        | Cons1 (x, rest) ->
+            let lst1, lst2 = split rest
+            (x :: lst1, lst2)
+        | Cons2 (y, rest) ->
+            let lst1, lst2 = split rest
+            (lst1, y :: lst2)
+    let length2 lst =
+        let lst1, lst2 = split lst
+        (List.length lst1, List.length lst2)
 
 (* Question 1.3 *)
 
 
-    let map _ = failwith "not implemented"
+    let rec map f g =
+        function
+        | Nil -> Nil
+        | Cons1 (x, rest) -> Cons1 (f x, map f g rest)
+        | Cons2 (y, rest) -> Cons2 (g y, map f g rest)
 
 (* Question 1.4 *)
 
-    let filter _ = failwith "not implemented"
+    let rec filter f g =
+        function
+        | Nil -> Nil
+        | Cons1 (x, rest) ->
+            let lst = filter f g rest
+            if f x then Cons1(x, lst) else lst
+        | Cons2 (y, rest) ->
+            let lst = filter f g rest
+            if g y then Cons2(y, lst) else lst
 
 (* Question 1.5 *)
 
-    let fold _ = failwith "not implemented"
+    let rec fold f g acc =
+        function
+        | Nil -> acc
+        | Cons1 (x, rest) -> fold f g (f acc x) rest
+        | Cons2 (y, rest) -> fold f g (g acc y) rest
 
 (* 2: Code Comprehension *)
     let rec foo xs ys =
@@ -68,8 +98,8 @@
 
 (* Question 2.1 *)
 
-    (* 
-    
+    (*
+
     Q: What are the types of functions foo and bar?
 
     A: <Your answer goes here>
@@ -79,27 +109,27 @@
        Focus on what it does rather than how it does it.
 
     A: <Your answer goes here>
-    
-    Q: What would be appropriate names for functions 
+
+    Q: What would be appropriate names for functions
        foo and bar?
 
     A: <Your answer goes here>
-    
+
     Q: What would be appropriate names of the values a and b in bar.
-    
-    
+
+
     A: <Your answer goes here>
-    
+
     *)
-        
+
 
 (* Question 2.2 *)
 
- 
-    (* 
+
+    (*
     The code includes the keyword "and".
 
-    
+
     Q: What function does this keyword serve in general
        (why would you use "and" when writing any program)?
 
@@ -115,9 +145,9 @@
 
     *)
 
-(* Question 2.3 *) 
+(* Question 2.3 *)
     let foo2 _ = failwith "not implemented"
-    
+
     (* use the following code as a starting template
     let foo2 xs ys = List.unfold <a function goes here> (xs, ys)
     *)
@@ -191,10 +221,10 @@
             | Some (x, st') ->
                 let (SM g) = f x
                 g st')
-        
+
     let (>>=) m f = bind m f
     let (>>>=) m n = m >>= (fun () -> n)
-    let evalSM (SM f) s = f s 
+    let evalSM (SM f) s = f s
 
     let smPlus _ = failwith "not implemented"
     let smMinus _ = failwith "not implemented"
@@ -203,7 +233,7 @@
 
 (* Question 4.5 *)
 
-    (* You may solve this exercise either using monadic operators or 
+    (* You may solve this exercise either using monadic operators or
         using computational expressions. *)
 
     type StateBuilder() =
