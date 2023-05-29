@@ -10,6 +10,7 @@
     <Compile Include="Suggested1.fs" />
     <Compile Include="Question2.fs" />
     <Compile Include="Suggested2.fs" />
+    <Compile Include="Question3.fs" />
   </ItemGroup>
 
 </Project>
