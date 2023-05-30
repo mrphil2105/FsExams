@@ -146,7 +146,17 @@
     *)
 
 (* Question 2.3 *)
-    let foo2 _ = failwith "not implemented"
+    let foo2 xs ys =
+        List.unfold (fun (xs, ys) ->
+            match xs, ys with
+            | [], [] -> None
+            | [], y :: ys -> Some (y, ([], ys))
+            | x :: xs, [] -> Some (x, (xs, []))
+            | x :: xs, y :: ys when x < y ->
+                Some (x, (xs, y :: ys))
+            | x :: xs, y :: ys ->
+                Some (y, (x :: xs, ys))
+        ) (xs, ys)
 
     (* use the following code as a starting template
     let foo2 xs ys = List.unfold <a function goes here> (xs, ys)
@@ -165,14 +175,80 @@
 
     A: <Your answer goes here>
 
+        let rec foo xs ys =
+          match xs, ys with
+          | [], ys -> ys
+          | xs, [] -> xs
+          | x :: xs, y :: ys when x < y ->
+            x :: (foo xs (y :: ys))
+          | x :: xs, y :: ys ->
+            y :: (foo (x :: xs) ys)
+
+        Function evaluation:
+        foo [3; 6; 2] [4; 1; 5]
+        3 :: (foo [6;2] [4; 1; 5])
+        3 :: 4 :: (foo [6; 2] [1; 5])
+        3 :: 4 :: 1 :: (foo [6; 2] [5])
+        3 :: 4 :: 1 :: 5 :: (foo [6; 2] [])   <---
+        3 :: 4 :: 1 :: 5 :: [6; 2]
+        3 :: 4 :: 1 :: [5; 6; 2]
+        3 :: 4 :: [1; 5; 6; 2]
+        3 :: [4; 1; 5; 6; 2]
+        [3; 4; 1; 5; 6; 2]
+
+        Each function call depends on the next one in order to finish, which creates a chain of calls that
+        will return once the last call returns a value. This can be seen in the evaluation above. The line
+        marked with "<--" is the last call of foo, which results in the call chain concluding with values
+        combined all through the call stack. There is no way for the compiler to make this tail recursive.
+
     *)
 (* Question 2.5 *)
 
-    let fooTail _ = failwith "not implemented"
+    (*
+    let rec foo xs ys =
+      match xs, ys with
+      | [], ys -> ys
+      | xs, [] -> xs
+      | x :: xs, y :: ys when x < y ->
+        x :: (foo xs (y :: ys))
+      | x :: xs, y :: ys ->
+        y :: (foo (x :: xs) ys)
+    *)
+
+    let fooTail xs ys =
+        let rec aux acc xs ys =
+            match xs, ys with
+            | [], [] -> List.rev acc
+            | [], y :: ys -> aux (y :: acc) [] ys
+            | x :: xs, [] -> aux (x :: acc) xs []
+            | x :: xs, y :: ys when x < y ->
+                aux (x :: acc) xs (y :: ys)
+            | _, y :: ys ->
+                aux (y :: acc) xs ys
+        aux [] xs ys
 
 (* Question 2.5 *)
 
-    let barTail _ = failwith "not implemented"
+    (*
+    and bar =
+      function
+      | [] -> []
+      | [x] -> [x]
+      | xs ->
+        let (a, b) = List.splitAt (List.length xs / 2) xs
+        foo (bar a) (bar b)
+    *)
+
+    let barTail xs =
+        let rec aux xs c =
+            match xs with
+            | [] -> c []
+            | [x] -> c [x]
+            | xs ->
+                let a, b = List.splitAt (List.length xs / 2) xs
+                aux a (fun vl ->
+                    aux b (fun vr -> c (fooTail vl vr)))
+        aux xs id
 
 (* 3: Approximating square roots *)
 
