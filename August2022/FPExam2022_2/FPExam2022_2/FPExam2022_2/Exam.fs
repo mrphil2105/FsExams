@@ -1,4 +1,7 @@
 ﻿module Exam2022_2
+
+    open System
+
 (* If you are importing this into F# interactive then comment out
    the line above and remove the comment for the line bellow.
 
@@ -149,21 +152,67 @@
 
 (* Question 3.1 *)
 
-    let validOracle _ = failwith "not implemented"
+    let getTarget o =
+        let rec aux target x =
+            match o.f x with
+            | Equal when Option.isNone target -> aux (Some x) (x + 1)
+            | Equal when Option.isSome target -> None
+            | _ when x < o.max -> aux target (x + 1)
+            | _ -> target
+        aux None 1
+
+    let validOracle o =
+        let target = getTarget o
+        match target with
+        | None -> false
+        | Some target ->
+            let rec aux target x =
+                match o.f x with
+                | _ when x > o.max -> true
+                | Lower when x > target -> aux target (x + 1)
+                | Higher when x < target -> aux target (x + 1)
+                | Equal when x = target -> aux target (x + 1)
+                | _ -> false
+            aux target 1
+
 
 (* Question 3.2 *)
 
-    let randomOracle _ = failwith "not implemented"
+    let randomOracle m oseed =
+        let random = if Option.isSome oseed then Random(Option.get oseed) else Random()
+        let r = random.Next(1, m + 1)
+        { max = m; f =
+            fun x ->
+                match x with
+                | _ when x < r -> Higher
+                | _ when x > r -> Lower
+                | _  -> Equal }
 
 (* Question 3.3 *)
 
-    let findNumber _ = failwith "not implemented"
+    let findNumber o =
+        let rec aux a b gs =
+            let g = a + ((b - a) / 2)
+            match o.f g with
+            | Lower -> aux a (g - 1) (g :: gs)
+            | Higher -> aux (g + 1) b (g :: gs)
+            | Equal -> gs
+        aux 1 o.max []
 
 (* Question 3.4 *)
     let evilOracle _ = failwith "not implemented"
 
 (* Question 3.5 *)
-    let parFindNumber _ = failwith "not implemented"
+    let parFindNumber os =
+        List.map
+            (fun o ->
+                async {
+                    return findNumber o
+                }
+            ) os
+        |> Async.Parallel
+        |> Async.RunSynchronously
+        |> Seq.toList
 
 (* 4: Assembly *)
 
