@@ -236,26 +236,39 @@
 
 (* Question 4.1 *)
 
-    type program = unit (* replace this entire type with your own *)
-    let assemblyToProgram _ = failwith "not implemented"
+    type program = assembly list
+    let assemblyToProgram (cmds: assembly list): program =
+        cmds
 
 (* Question 4.2 *)
 
-    type state = unit (* replace this entire type with your own *)
-    let emptyState _ = failwith "not implemented"
+    type state = {
+        counter: uint
+        registers: Map<register, int>
+        program: program
+    }
+    let emptyState cmds =
+        { counter = 0u
+          registers = Map.empty |> Map.add R1 0 |> Map.add R2 0 |> Map.add R3 0
+          program = assemblyToProgram cmds }
 
 
 (* Question 4.3 *)
 
-    let setRegister _ = failwith "not implemented"
+    let setRegister r v st =
+        { st with registers = Map.add r v st.registers }
 
-    let getRegister _ = failwith "not implemented"
+    let getRegister r st =
+        Map.find r st.registers
 
-    let setProgramCounter _ = failwith "not implemented"
+    let setProgramCounter addr st =
+        { st with counter = addr }
 
-    let getProgramCounter _ = failwith "not implemented"
+    let getProgramCounter st =
+        st.counter
 
-    let getProgram _ = failwith "not implemented"
+    let getProgram st =
+        st.program
 
 (* Question 4.4 *)
 
@@ -273,15 +286,17 @@
 
     let evalSM prog (SM f) = f (emptyState prog)
 
-    let setReg _ = failwith "not implemented"
+    let setReg r v = SM (fun s -> (), setRegister r v s)
 
-    let getReg _ = failwith "not implemented"
+    let getReg r = SM (fun s -> getRegister r s, s)
 
-    let setPC _ = failwith "not implemented"
+    let setPC addr = SM (fun s -> (), setProgramCounter addr s)
 
-    let incPC _ = failwith "not implemented"
+    let incPC = SM (fun s -> (), setProgramCounter (s.counter + 1u) s)
 
-    let lookupCmd _ = failwith "not implemented"
+    let lookupCmd = SM (fun s ->
+        (if s.counter < uint (List.length s.program)
+         then Some s.program[int s.counter] else None), s)
 
 
 
@@ -296,4 +311,35 @@
 
     let state = new StateBuilder()
 
-    let runProgram _ = failwith "not implemented"
+    let rec runProgram () =
+        state {
+            let! cmd = lookupCmd
+            match cmd with
+            | None -> return ()
+            | Some cmd ->
+                match cmd with
+                | MOVI (r, v) ->
+                    do! setReg r v
+                    do! incPC
+                    return! runProgram ()
+                | MULT (r1, r2, r3) ->
+                    let! a = getReg r2
+                    let! b = getReg r3
+                    do! setReg r1 (a * b)
+                    do! incPC
+                    return! runProgram ()
+                | SUB (r1, r2, r3) ->
+                    let! a = getReg r2
+                    let! b = getReg r3
+                    do! setReg r1 (a - b)
+                    do! incPC
+                    return! runProgram ()
+                | JGTZ (r, a) ->
+                    let! v = getReg r
+                    if v > 0 then
+                        do! setPC a
+                        return! runProgram ()
+                    else
+                        do! incPC
+                        return! runProgram ()
+        }
