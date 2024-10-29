@@ -2,13 +2,13 @@
 (* If you are importing this into F# interactive then comment out
    the line above and remove the comment for the line bellow.
 
-   Do note that the project will not compile if you do this, but 
-   it does allow you to work in interactive mode and you can just remove the '=' 
+   Do note that the project will not compile if you do this, but
+   it does allow you to work in interactive mode and you can just remove the '='
    to make the project compile work again.
 
    Do not remove the line (even though that does work) because you may inadvertantly
    introduce indentation errors in your code that may be hard to find if you want
-   to switch back to project mode. 
+   to switch back to project mode.
 
    Alternative, keep the line as is, but load ExamInteractive.fsx into the interactive environment
    *)
@@ -18,18 +18,33 @@
 
 (* Question 1.1 *)
 
-    let insert _ = failwith "not implemented"
-    let insertionSort _ = failwith "not implemented"
-    
+    let rec insert x lst =
+        match lst with
+        | [] -> [x]
+        | x' :: xs when x > x' -> x' :: insert x xs
+        | _ -> x :: lst
+    let rec insertionSort lst =
+        match lst with
+        | [] -> []
+        | x :: xs -> insert x (insertionSort xs)
+
 (* Question 1.2 *)
 
-    let insertTail _ = failwith "not implemented"
+    let insertTail x lst =
+        let rec aux acc x xs =
+            match x, xs with
+            | None, [] -> List.rev acc
+            | None, x' :: xs -> aux (x' :: acc) None xs
+            | Some x, [] -> List.rev (x :: acc)
+            | Some x, x' :: xs when x > x' -> aux (x' :: acc) (Some x) xs
+            | Some x, x' :: xs -> aux (x' :: x :: acc) None xs
+        aux [] (Some x) lst
     let insertionSortTail _ = failwith "not implemented"
 
 (* Question 1.3 *)
 
-    (* 
-    Q: Why are the higher-order functions from the List library 
+    (*
+    Q: Why are the higher-order functions from the List library
     not a good fit to implement insert?
 
     A: <Your answer goes here>
@@ -43,21 +58,21 @@
     let insertionSortBy _ = failwith "not implemented"
 
 (* 2: Code Comprehension *)
-    let rec foo x = 
-        function 
+    let rec foo x =
+        function
         | y :: ys when x = y -> ys
         | y :: ys            -> y :: (foo x ys)
 
     let rec bar x =
         function
         | []        -> []
-        | xs :: xss -> (x :: xs) :: bar x xss 
+        | xs :: xss -> (x :: xs) :: bar x xss
 
     let rec baz =
         function
         | [] -> []
         | [x] -> [[x]]
-        | xs  -> 
+        | xs  ->
             let rec aux =
                 function
                 | []      -> []
@@ -66,42 +81,42 @@
 
 (* Question 2.1 *)
 
-    (* 
-    
+    (*
+
     Q: What are the types of functions foo,  bar, and baz?
 
     A: <Your answer goes here>
 
 
-    Q: What do functions foo, bar, and baz do? 
+    Q: What do functions foo, bar, and baz do?
        Focus on what they do rather than how they do it.
 
     A: <Your answer goes here>
 
 
-    Q: What would be appropriate names for functions 
+    Q: What would be appropriate names for functions
        foo, bar, and baz?
 
     A: <Your answer goes here>
-    
+
     *)
-        
+
 
 (* Question 2.2 *)
 
- 
-    (* 
-    The function foo generates a warning during compilation: 
+
+    (*
+    The function foo generates a warning during compilation:
     Warning: Incomplete pattern matches on this expression.
 
-    
-    Q: Why does this happen, and where? 
+
+    Q: Why does this happen, and where?
 
     A: <Your answer goes here>
 
 
-    Q: For these particular three functions will this incomplete 
-       pattern match ever cause problems for any possible execution of baz? 
+    Q: For these particular three functions will this incomplete
+       pattern match ever cause problems for any possible execution of baz?
        If yes, why; if no, why not.
 
     A: <Your answer goes here>
@@ -110,9 +125,9 @@
 
     let foo2 _ = failwith "not implemented"
 
-(* Question 2.3 *) 
+(* Question 2.3 *)
 
-    (* 
+    (*
     In the function baz there is a sub expression foo y >> baz >> bar y
 
     Q: What is the type of this expression
@@ -137,9 +152,9 @@
 (* Question 2.6 *)
 
     (*
-    
+
     Q: The function foo is not tail recursive. Why?
-    
+
     A: <Your answer goes here>
 
     *)
@@ -160,21 +175,21 @@
     type strategy = (shape * shape) list -> shape
 
     let parrot _ = failwith "not implemented"
-    
+
     let beatingStrat _ = failwith "not implemented"
 
     let roundRobin _ = failwith "not implemented"
 
 (* Question 3.3 *)
 
-    (* 
-    
-    Q: It may be tempting to generate a function that calculates your 
-       point tuple after n rounds and then use Seq.initInfinite to 
+    (*
+
+    Q: It may be tempting to generate a function that calculates your
+       point tuple after n rounds and then use Seq.initInfinite to
        generate the sequence. This is not a good solution. Why?
 
     A: <Your answer goes here>
-    
+
     *)
 
     let bestOutOf _ = failwith "not implemented"
@@ -197,18 +212,18 @@
 
     let ret x = S (fun s -> Some (x, s))
     let fail  = S (fun _ -> None)
-    let bind f (S a) : SM<'b> = 
-        S (fun s -> 
-            match a s with 
-            | Some (x, s') -> 
-                let (S g) = f x             
+    let bind f (S a) : SM<'b> =
+        S (fun s ->
+            match a s with
+            | Some (x, s') ->
+                let (S g) = f x
                 g s'
             | None -> None)
-        
+
     let (>>=) x f = bind f x
     let (>>>=) x y = x >>= (fun _ -> y)
 
-    let evalSM (S f) = f emptyStack 
+    let evalSM (S f) = f emptyStack
 
     let push _ = failwith "not implemented"
     let pop _ = failwith "not implemented"
@@ -221,27 +236,27 @@
         let rec aux acc =
             match System.Console.Read() |> char with
             | '\n' when acc = [] -> None
-            | c    when System.Char.IsWhiteSpace c -> 
+            | c    when System.Char.IsWhiteSpace c ->
                 acc |> List.fold (fun strAcc ch -> (string ch) + strAcc) "" |> Some
             | c -> aux (c :: acc)
 
         S (fun s -> Some (aux [], s))
 
-    (* 
-    
-    Q: Consider the definition of write There is a reason that the definition 
-       is S (fun s -> printf "%s" str; Some ((), s)) and not just 
-       ret (printf "%s" str). For a similar reason, in read, we write 
-       S (fun s -> Some (aux [], s)) and not ret (aux []). 
+    (*
+
+    Q: Consider the definition of write There is a reason that the definition
+       is S (fun s -> printf "%s" str; Some ((), s)) and not just
+       ret (printf "%s" str). For a similar reason, in read, we write
+       S (fun s -> Some (aux [], s)) and not ret (aux []).
        What is the problem with using ret in both of these cases?
-    
+
     A: <Your answer goes here>
-    
+
     *)
 
 (* Question 4.4 *)
 
-    (* You may solve this exercise either using monadic operators or 
+    (* You may solve this exercise either using monadic operators or
         using computational expressions. *)
 
     type StateBuilder() =

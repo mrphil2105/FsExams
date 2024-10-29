@@ -198,7 +198,7 @@
 
         Each function call depends on the next one in order to finish, which creates a chain of calls that
         will return once the last call returns a value. This can be seen in the evaluation above. The line
-        marked with "<--" is the last call of foo, which results in the call chain concluding with values
+        marked with "<--" is the last call of foo, which results in the call chain evaluating with values
         combined all through the call stack. There is no way for the compiler to make this tail recursive.
 
     *)
